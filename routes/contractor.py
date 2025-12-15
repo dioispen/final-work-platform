@@ -61,15 +61,10 @@ async def view_project(request: Request, project_id: int, user: dict = Depends(r
 
     my_bid = BidRepository.get_contractor_bid(project_id, user['user_id'])
 
-    # ⭐ 取得甲方（client）的評價（修正：用位置參數）
-    client_reviews = ReviewRepository.get_average_and_comments(
-        project["client_id"]
-    )
-    # ⭐ 乙方在看甲方：顯示甲方過去收到的評價
+    #  取得甲方（client）的評價（修正：用位置參數）
+    client_reviews = ReviewRepository.get_average_and_comments(project["client_id"])
     client_id = project["client_id"]
-    client_rating = ReviewRepository.get_user_avg_scores(client_id)
-
-    # ⭐ 乙方是否已經對此專案評價過甲方
+    #  乙方是否已經對此專案評價過甲方
     has_reviewed = ReviewRepository.has_reviewed(project_id, user['user_id'])
     issues = IssueRepository.get_by_project(project_id)
 
@@ -81,7 +76,6 @@ async def view_project(request: Request, project_id: int, user: dict = Depends(r
             "project": project,
             "my_bid": my_bid,
             "client_reviews": client_reviews,
-            "rating": client_rating,
             "has_reviewed": has_reviewed,
             "target_id": client_id,
             "issues": issues,  # 評價對象：甲方
@@ -107,7 +101,7 @@ async def submit_bid(
     if not project:
         raise HTTPException(status_code=404)
 
-    deadline = project.get("deadline")
+    deadline = project.get("deadline").replace(tzinfo=timezone.utc) if project.get("deadline") else None
     now = datetime.now(timezone.utc)
     if deadline and isinstance(deadline, datetime) and now > deadline:
         raise HTTPException(status_code=400, detail="投標截止日期已過")

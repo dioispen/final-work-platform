@@ -168,8 +168,7 @@ async def view_deliverable(
 
     contractor_id = project.get("contractor_id")
 
-    rating = ReviewRepository.get_user_avg_scores(contractor_id)
-    reviews = ReviewRepository.get_reviews_for_user(contractor_id)
+    reviews = ReviewRepository.get_average_and_comments(contractor_id)
     has_reviewed = ReviewRepository.has_reviewed(project_id, user["user_id"])
     issues = IssueRepository.get_by_project(project_id)
 
@@ -180,7 +179,6 @@ async def view_deliverable(
             "user": user,
             "project": project,
             "deliverables": deliverables,
-            "rating": rating,
             "reviews": reviews,
             "has_reviewed": has_reviewed,
             "target_id": contractor_id,

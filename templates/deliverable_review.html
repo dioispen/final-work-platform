@@ -68,27 +68,40 @@
 <div class="card" style="margin-top:2rem;">
     <h3>承包者評價</h3>
 
-    {% if rating %}
-        <p><strong>平均分數：</strong> {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
+    <div class="card">
+    <h3>委託人過往評價</h3>
+
+    {% if reviews and reviews.avg %}
+        <p><strong>平均評分：</strong></p>
         <ul>
-            <li>產出品質：{{ rating.avg_dim1 }}</li>
-            <li>執行效率：{{ rating.avg_dim2 }}</li>
-            <li>合作態度：{{ rating.avg_dim3 }}</li>
+            <li>產出品質：
+                {{ reviews.avg[0]|round(1) if reviews.avg[0] else "尚無" }} ⭐
+            </li>
+            <li>執行效率：
+                {{ reviews.avg[1]|round(1) if reviews.avg[1] else "尚無" }} ⭐
+            </li>
+            <li>合作態度：
+                {{ reviews.avg[2]|round(1) if reviews.avg[2] else "尚無" }} ⭐
+            </li>
         </ul>
-        <hr>
     {% else %}
-        <p>尚無評價</p>
+        <p>尚無評價資料</p>
     {% endif %}
 
-    {% for r in reviews %}
-        <div style="margin-bottom:1rem;">
-            <p><strong>{{ r.reviewer_name }}</strong>：</p>
-            <p>{{ r.comment }}</p>
-            <p>分數：{{ r.dim1 }} / {{ r.dim2 }} / {{ r.dim3 }}</p>
-            <small>{{ r.created_at }}</small>
-            <hr>
-        </div>
-    {% endfor %}
+    {% if reviews.comments %}
+        <p><strong>歷史評論：</strong></p>
+        <ul>
+            {% for c in reviews.comments %}
+                <li style="margin-bottom: 0.5rem;">
+                    {{ c[0] }}<br>
+                    <small style="color:#888;">{{ c[1] }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>尚無文字評論</p>
+    {% endif %}
+</div>
 
     {% if project.status == 'completed' and not has_reviewed %}
         <a class="btn" href="/review/form?project_id={{ project.id }}&target_id={{ target_id }}">

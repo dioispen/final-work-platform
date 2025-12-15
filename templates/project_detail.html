@@ -131,37 +131,6 @@
     </ul>
 </div>
 {% endif %}
-<div class="card" style="margin-top: 2rem;">
-    <h3>委託人過去評價</h3>
-
-    {% if rating %}
-        <p><strong>平均分數：</strong>⭐ {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
-        <ul>
-            <li>需求合理性：{{ rating.avg_dim1 }}</li>
-            <li>驗收難度：{{ rating.avg_dim2 }}</li>
-            <li>合作態度：{{ rating.avg_dim3 }}</li>
-        </ul>
-        <hr>
-    {% else %}
-        <p>尚無評價</p>
-    {% endif %}
-
-    {% for r in reviews %}
-        <div style="margin-bottom: 1rem;">
-            <p><strong>{{ r.reviewer_name }}</strong>：</p>
-            <p>{{ r.comment }}</p>
-            <p>分數：{{ r.dim1 }} / {{ r.dim2 }} / {{ r.dim3 }}</p>
-            <small>{{ r.created_at }}</small>
-            <hr>
-        </div>
-    {% endfor %}
-
-    {% if project.status == 'completed' and not has_reviewed %}
-        <a class="btn" href="/review/form?project_id={{ project.id }}&target_id={{ target_id }}">
-            評價委託人
-        </a>
-    {% endif %}
-</div>
 
 <a href="/contractor/dashboard" class="btn">返回</a>
 

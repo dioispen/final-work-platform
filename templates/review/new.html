@@ -15,10 +15,10 @@
 
             <label>需求合理性（1–5）</label>
             <input type="number" name="score_1" min="1" max="5" required>
-
+            <br/>
             <label>驗收難度（1–5）</label>
             <input type="number" name="score_2" min="1" max="5" required>
-
+            <br/>
             <label>合作態度（1–5）</label>
             <input type="number" name="score_3" min="1" max="5" required>
         {% else %}
@@ -26,17 +26,17 @@
 
             <label>產出品質（1–5）</label>
             <input type="number" name="score_1" min="1" max="5" required>
-
+            <br/>
             <label>執行效率（1–5）</label>
             <input type="number" name="score_2" min="1" max="5" required>
-
+            <br/>
             <label>合作態度（1–5）</label>
             <input type="number" name="score_3" min="1" max="5" required>
         {% endif %}
-
+        <br/>
         <label>整體評論</label>
         <textarea name="comment" rows="4"></textarea>
-
+        <br/>
         <button type="submit" class="btn">送出評價</button>
     </form>
 </div>
