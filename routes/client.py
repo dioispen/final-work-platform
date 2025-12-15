@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sql_repository import ProjectRepository, BidRepository, DeliverableRepository
-from models.review_repository import ReviewRepository   # ⭐ 新增
+
+from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository
+from models.review_repository import ReviewRepository
 from .dependencies import require_auth
 
 router = APIRouter(prefix="/client", tags=["client"])
@@ -165,14 +166,26 @@ async def view_deliverable(
 
     deliverables = DeliverableRepository.get_all_by_project_id(project_id)
 
+    contractor_id = project.get("contractor_id")
+
+    rating = ReviewRepository.get_user_avg_scores(contractor_id)
+    reviews = ReviewRepository.get_reviews_for_user(contractor_id)
+    has_reviewed = ReviewRepository.has_reviewed(project_id, user["user_id"])
+    issues = IssueRepository.get_by_project(project_id)
+
     return templates.TemplateResponse(
         "deliverable_review.html",
         {
             "request": request,
             "user": user,
             "project": project,
-            "deliverables": deliverables
-        }
+            "deliverables": deliverables,
+            "rating": rating,
+            "reviews": reviews,
+            "has_reviewed": has_reviewed,
+            "target_id": contractor_id,
+            "issues": issues,
+        },
     )
 
 @router.post("/project/{project_id}/complete")

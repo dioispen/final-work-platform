@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository
 from models.review_repository import ReviewRepository
 from sql_repository import ProjectRepository, BidRepository, DeliverableRepository
 from .dependencies import require_auth
@@ -64,6 +65,13 @@ async def view_project(request: Request, project_id: int, user: dict = Depends(r
     client_reviews = ReviewRepository.get_average_and_comments(
         project["client_id"]
     )
+    # ⭐ 乙方在看甲方：顯示甲方過去收到的評價
+    client_id = project["client_id"]
+    client_rating = ReviewRepository.get_user_avg_scores(client_id)
+
+    # ⭐ 乙方是否已經對此專案評價過甲方
+    has_reviewed = ReviewRepository.has_reviewed(project_id, user['user_id'])
+    issues = IssueRepository.get_by_project(project_id)
 
     return templates.TemplateResponse(
         "project_detail.html",
@@ -72,8 +80,12 @@ async def view_project(request: Request, project_id: int, user: dict = Depends(r
             "user": user,
             "project": project,
             "my_bid": my_bid,
-            "client_reviews": client_reviews
-        }
+            "client_reviews": client_reviews,
+            "rating": client_rating,
+            "has_reviewed": has_reviewed,
+            "target_id": client_id,
+            "issues": issues,  # 評價對象：甲方
+        },
     )
 
 # =========================

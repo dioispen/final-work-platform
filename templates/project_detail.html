@@ -110,6 +110,59 @@
 </div>
 {% endif %}
 
+{% if issues %}
+<div class="card" style="margin-top: 2rem; border-left: 5px solid #e67e22;">
+    <h3>📢 委託人的修改建議 (Issues)</h3>
+    <p style="color:#666;">委託人已針對此專案提出討論，請點擊下方連結回覆：</p>
+    <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+        {% for issue in issues %}
+        <li style="margin-bottom: 0.5rem;">
+            <a href="/issue/{{ issue.id }}" style="text-decoration: none; font-weight: bold; font-size: 1.1em; color: #2980b9;">
+                {{ issue.title }}
+            </a>
+            {% if issue.status == 'open' %}
+                <span style="background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">待處理</span>
+            {% else %}
+                <span style="background: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">已解決</span>
+            {% endif %}
+            <span style="color:#888; font-size: 0.9em;"> - {{ issue.created_at }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<div class="card" style="margin-top: 2rem;">
+    <h3>委託人過去評價</h3>
+
+    {% if rating %}
+        <p><strong>平均分數：</strong>⭐ {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
+        <ul>
+            <li>需求合理性：{{ rating.avg_dim1 }}</li>
+            <li>驗收難度：{{ rating.avg_dim2 }}</li>
+            <li>合作態度：{{ rating.avg_dim3 }}</li>
+        </ul>
+        <hr>
+    {% else %}
+        <p>尚無評價</p>
+    {% endif %}
+
+    {% for r in reviews %}
+        <div style="margin-bottom: 1rem;">
+            <p><strong>{{ r.reviewer_name }}</strong>：</p>
+            <p>{{ r.comment }}</p>
+            <p>分數：{{ r.dim1 }} / {{ r.dim2 }} / {{ r.dim3 }}</p>
+            <small>{{ r.created_at }}</small>
+            <hr>
+        </div>
+    {% endfor %}
+
+    {% if project.status == 'completed' and not has_reviewed %}
+        <a class="btn" href="/review/form?project_id={{ project.id }}&target_id={{ target_id }}">
+            評價委託人
+        </a>
+    {% endif %}
+</div>
+
 <a href="/contractor/dashboard" class="btn">返回</a>
 
 {% endblock %}

@@ -4,6 +4,7 @@ from models.bid_repository import BidRepository
 from models.user_repository import UserRepository
 from models.deliverable_repository import DeliverableRepository
 from models.review_repository import ReviewRepository   
+from models.issue_repository import IssueRepository
 
 __all__ = [
     "ProjectRepository",
@@ -11,4 +12,5 @@ __all__ = [
     "UserRepository",
     "DeliverableRepository",
     "ReviewRepository",   
+    "IssueRepository",
 ]
