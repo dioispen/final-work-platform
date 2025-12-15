@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}已完成評價{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>✅ 已完成評價</h2>
+
+    <p>你已經完成本次合作的評價，感謝你的回饋。</p>
+
+    <p style="color:#666;">
+        專案：{{ project.title }}
+    </p>
+
+    {% if user.role == "client" %}
+        <a href="/client/completed" class="btn">返回已完成專案</a>
+    {% else %}
+        <a href="/contractor/completed" class="btn">返回已完成專案</a>
+    {% endif %}
+</div>
+{% endblock %}

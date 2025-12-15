@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-{% block title %}已完成專案(承包者){% endblock %}
+{% block title %}已完成專案（接案人）{% endblock %}
 {% block content %}
-
 <div class="card">
     <h2>已完成專案</h2>
     <a href="/contractor/dashboard" class="btn">返回控制台</a>
@@ -19,49 +18,18 @@
         <p>
             <strong>狀態:</strong>
             <span class="status status-{{ project.status }}">
-                {% if project.status == 'completed' %}已完成{% endif %}
+                已完成
             </span>
         </p>
 
         <p><strong>完成時間:</strong> {{ project.updated_at }}</p>
 
-        <hr>
-
-        <!-- ⭐ 顯示甲方給乙方的評價 -->
-        <h3>委託人給你的評價</h3>
-
-        {% if project.rating %}
-            <p><strong>平均總分：</strong>⭐ {{ project.rating.overall_avg }}（{{ project.rating.review_count }} 筆）</p>
-
-            <ul>
-                <li>需求合理性：{{ project.rating.avg_dim1 }}</li>
-                <li>驗收難度：{{ project.rating.avg_dim2 }}</li>
-                <li>合作態度：{{ project.rating.avg_dim3 }}</li>
-            </ul>
-
-            <hr>
-
-            {% for r in project.reviews %}
-                <div style="margin-bottom:1rem;">
-                    <p><strong>{{ r.reviewer_name }}</strong>：</p>
-                    <p>{{ r.comment }}</p>
-
-                    <p>分數：</p>
-                    <ul>
-                        <li>需求合理性：{{ r.dim1 }}</li>
-                        <li>驗收難度：{{ r.dim2 }}</li>
-                        <li>合作態度：{{ r.dim3 }}</li>
-                    </ul>
-
-                    <small>{{ r.created_at }}</small>
-                    <hr>
-                </div>
-            {% endfor %}
-
-        {% else %}
-            <p>尚無委託人評價</p>
-        {% endif %}
-
+        <!-- ⭐ 新增區塊 -->
+        <div style="margin-top: 1rem;">
+            <a href="/review/{{ project.id }}" class="btn btn-warning">
+                評價委託人
+            </a>
+        </div>
     </div>
     {% endfor %}
 {% else %}
@@ -69,5 +37,4 @@
         <p>目前沒有已完成的專案</p>
     </div>
 {% endif %}
-
 {% endblock %}

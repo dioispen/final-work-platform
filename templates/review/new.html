@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}提交評價{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>合作評價</h2>
+
+    <form method="post">
+
+        <input type="hidden" name="reviewee_id" value="{{ reviewee_id }}">
+        <input type="hidden" name="reviewee_role" value="{{ reviewee_role }}">
+
+        {% if reviewee_role == "client" %}
+            <p><strong>評價甲方</strong></p>
+
+            <label>需求合理性（1–5）</label>
+            <input type="number" name="score_1" min="1" max="5" required>
+
+            <label>驗收難度（1–5）</label>
+            <input type="number" name="score_2" min="1" max="5" required>
+
+            <label>合作態度（1–5）</label>
+            <input type="number" name="score_3" min="1" max="5" required>
+        {% else %}
+            <p><strong>評價乙方</strong></p>
+
+            <label>產出品質（1–5）</label>
+            <input type="number" name="score_1" min="1" max="5" required>
+
+            <label>執行效率（1–5）</label>
+            <input type="number" name="score_2" min="1" max="5" required>
+
+            <label>合作態度（1–5）</label>
+            <input type="number" name="score_3" min="1" max="5" required>
+        {% endif %}
+
+        <label>整體評論</label>
+        <textarea name="comment" rows="4"></textarea>
+
+        <button type="submit" class="btn">送出評價</button>
+    </form>
+</div>
+{% endblock %}

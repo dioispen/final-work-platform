@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request, Depends, Form, HTTPException
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from models.review_repository import ReviewRepository
@@ -10,92 +10,74 @@ router = APIRouter(prefix="/review", tags=["review"])
 templates = Jinja2Templates(directory="templates")
 
 
-# 顯示評價表單
-@router.get("/form", response_class=HTMLResponse)
-async def review_form(
-    request: Request,
+# =========================
+# 顯示評價頁面（GET）
+# =========================
+@router.get("/{project_id}")
+async def review_page(
     project_id: int,
-    target_id: int,
-    user: dict = Depends(require_auth),
+    request: Request,
+    user: dict = Depends(require_auth)
 ):
-    reviewer_id = user["user_id"]
-    role = user["role"]
-
-    # 專案是否存在
     project = ProjectRepository.get_by_id(project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
 
-    # 確認 reviewer 有參與這個專案（簡單檢查）
-    if reviewer_id not in (project["client_id"], project.get("contractor_id")):
-        raise HTTPException(status_code=403, detail="Not your project")
+    # 專案不存在或尚未完成
+    if not project or project["status"] != "completed":
+        raise HTTPException(status_code=403)
 
-    # 已評價就直接導回
-    if ReviewRepository.has_reviewed(project_id, reviewer_id):
-        if role == "client":
-            return RedirectResponse(
-                f"/client/project/{project_id}/deliverable", status_code=303
-            )
-        else:
-            return RedirectResponse(
-                f"/contractor/project/{project_id}", status_code=303
-            )
-
-    return templates.TemplateResponse(
-        "review_form.html",
+    # 防止重複評價
+    if ReviewRepository.has_reviewed(project_id, user["user_id"]):
+       return templates.TemplateResponse(
+        "review/already_reviewed.html",
         {
             "request": request,
-            "project": project,
-            "project_id": project_id,
-            "target_id": target_id,
-            "reviewer_id": reviewer_id,
-            "role": role,
-        },
+            "user": user,
+            "project": project
+        }
     )
 
-
-# 接收評價
-@router.post("/submit")
-async def submit_review(
-    request: Request,
-    project_id: int = Form(...),
-    target_id: int = Form(...),
-    dim1: int = Form(...),
-    dim2: int = Form(...),
-    dim3: int = Form(...),
-    comment: str = Form(""),
-    user: dict = Depends(require_auth),
-):
-    reviewer_id = user["user_id"]
-    role = user["role"]
-
-    if ReviewRepository.has_reviewed(project_id, reviewer_id):
-        # 已評過直接導回
-        if role == "client":
-            return RedirectResponse(
-                f"/client/project/{project_id}/deliverable", status_code=303
-            )
-        else:
-            return RedirectResponse(
-                f"/contractor/project/{project_id}", status_code=303
-            )
-
-    ReviewRepository.create_review(
-        project_id=project_id,
-        reviewer_id=reviewer_id,
-        target_id=target_id,
-        dim1=dim1,
-        dim2=dim2,
-        dim3=dim3,
-        comment=comment,
-    )
-
-    # 根據身份導回對應畫面
-    if role == "client":
-        return RedirectResponse(
-            f"/client/project/{project_id}/deliverable", status_code=303
-        )
+    # 判斷評誰
+    if user["role"] == "client":
+        reviewee_id = project["contractor_id"]
+        reviewee_role = "contractor"
     else:
-        return RedirectResponse(
-            f"/contractor/project/{project_id}", status_code=303
-        )
+        reviewee_id = project["client_id"]
+        reviewee_role = "client"
+
+    return templates.TemplateResponse(
+        "review/new.html",   # 確認 templates/new.html 存在
+        {
+            "request": request,
+            "project_id": project_id,
+            "reviewee_id": reviewee_id,
+            "reviewee_role": reviewee_role
+        }
+    )
+
+
+# =========================
+# 送出評價（POST）
+# =========================
+@router.post("/{project_id}")
+async def submit_review(
+    project_id: int,
+    request: Request,
+    user: dict = Depends(require_auth)
+):
+    form = await request.form()
+
+    ReviewRepository.create(
+        project_id=project_id,
+        reviewer_id=user["user_id"],
+        reviewee_id=int(form["reviewee_id"]),
+        score_1=int(form["score_1"]),
+        score_2=int(form["score_2"]),
+        score_3=int(form["score_3"]),
+        comment=form.get("comment")
+    )
+
+    # 評完回 completed
+    if user["role"] == "client":
+        return RedirectResponse("/client/completed", status_code=303)
+    else:
+        return RedirectResponse("/contractor/completed", status_code=303)

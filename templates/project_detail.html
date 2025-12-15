@@ -2,84 +2,114 @@
 {% block title %}專案詳情{% endblock %}
 {% block content %}
 
+<!-- ================= 專案基本資訊 ================= -->
 <div class="card">
     <h2>{{ project.title }}</h2>
     <p>{{ project.description }}</p>
-    <p><strong>預算：</strong>${{ project.budget }}</p>
-    <p><strong>委託人：</strong>{{ project.client_name }}</p>
-    <p><strong>狀態：</strong>
-        <span class="status status-{{ project.status }}">
+    <p><strong>預算:</strong> ${{ project.budget }}</p>
+    <p><strong>委託人:</strong> {{ project.client_name }}</p>
+
+    <p><strong>狀態:</strong>
         {% if project.status == 'open' %}待接案
         {% elif project.status == 'assigned' %}已被接案
         {% elif project.status == 'completed' %}已完成
         {% endif %}
-        </span>
     </p>
-    <p><strong>更新時間：</strong>{{ project.updated_at }}</p>
+
+    <p><strong>更新時間:</strong> {{ project.updated_at }}</p>
+
+    {% if project.deadline and project.status == 'open' %}
+        <p><strong>截止時間 (UTC):</strong> {{ project.deadline }}</p>
+    {% endif %}
 </div>
 
+<!-- ================= ⭐ 需求 1：甲方歷史評價 ================= -->
+<div class="card">
+    <h3>委託人過往評價</h3>
+
+    {% if client_reviews and client_reviews.avg %}
+        <p><strong>平均評分：</strong></p>
+        <ul>
+            <li>需求合理性：
+                {{ client_reviews.avg[0]|round(1) if client_reviews.avg[0] else "尚無" }} ⭐
+            </li>
+            <li>驗收難度：
+                {{ client_reviews.avg[1]|round(1) if client_reviews.avg[1] else "尚無" }} ⭐
+            </li>
+            <li>合作態度：
+                {{ client_reviews.avg[2]|round(1) if client_reviews.avg[2] else "尚無" }} ⭐
+            </li>
+        </ul>
+    {% else %}
+        <p>尚無評價資料</p>
+    {% endif %}
+
+    {% if client_reviews.comments %}
+        <p><strong>歷史評論：</strong></p>
+        <ul>
+            {% for c in client_reviews.comments %}
+                <li style="margin-bottom: 0.5rem;">
+                    {{ c[0] }}<br>
+                    <small style="color:#888;">{{ c[1] }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>尚無文字評論</p>
+    {% endif %}
+</div>
+
+<!-- ================= 我的投標 ================= -->
 {% if my_bid %}
 <div class="card">
     <h3>我的投標</h3>
-    <p><strong>報價：</strong>${{ my_bid.price }}</p>
-    <p><strong>說明：</strong>{{ my_bid.message }}</p>
-    <p><strong>狀態：</strong>
-        <span class="status status-{{ my_bid.status }}">
+    <p><strong>報價:</strong> ${{ my_bid.price }}</p>
+    <p><strong>說明:</strong> {{ my_bid.message }}</p>
+
+    <p><strong>檔案:</strong>
+        {% if my_bid.file_path %}
+            <a href="/{{ my_bid.file_path }}" target="_blank">
+                下載 {{ my_bid.file_name }}
+            </a>
+        {% else %}
+            尚無
+        {% endif %}
+    </p>
+
+    <p><strong>狀態:</strong>
         {% if my_bid.status == 'accepted' %}已接受
         {% elif my_bid.status == 'rejected' %}已拒絕
         {% else %}待處理
         {% endif %}
-        </span>
     </p>
 </div>
+
+<!-- ================= 投標表單 ================= -->
 {% elif project.status == 'open' %}
 <div class="card">
-    <h3>提交投標</h3>
-    <form method="POST" action="/contractor/project/{{ project.id }}/bid">
+    <h3>提交投標（需上傳 PDF 提案）</h3>
+
+    <form method="POST" action="/contractor/project/{{ project.id }}/bid" enctype="multipart/form-data">
         <div class="form-group">
             <label>報價</label>
             <input type="number" name="price" required>
         </div>
+
         <div class="form-group">
             <label>說明</label>
             <textarea name="message" required></textarea>
         </div>
+
+        <div class="form-group">
+            <label>提案計畫書 (PDF)</label>
+            <input type="file" name="file" accept="application/pdf" required>
+        </div>
+
         <button type="submit" class="btn">提交投標</button>
     </form>
 </div>
 {% endif %}
 
-<div class="card">
-    <h3>委託人過去評價</h3>
-
-    {% if rating %}
-        <p><strong>平均分數：</strong>⭐ {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
-        <ul>
-            <li>需求合理性：{{ rating.avg_dim1 }}</li>
-            <li>驗收難度：{{ rating.avg_dim2 }}</li>
-            <li>合作態度：{{ rating.avg_dim3 }}</li>
-        </ul>
-        <hr>
-    {% else %}
-        <p>尚無評價</p>
-    {% endif %}
-
-    {% for r in reviews %}
-        <div style="margin-bottom: 1rem;">
-            <p><strong>{{ r.reviewer_name }}</strong>：</p>
-            <p>{{ r.comment }}</p>
-            <p>分數：{{ r.dim1 }} / {{ r.dim2 }} / {{ r.dim3 }}</p>
-            <small>{{ r.created_at }}</small>
-            <hr>
-        </div>
-    {% endfor %}
-
-    {% if project.status == 'completed' and not has_reviewed %}
-        <a class="btn" href="/review/form?project_id={{ project.id }}&target_id={{ target_id }}">
-            評價委託人
-        </a>
-    {% endif %}
-</div>
-
 <a href="/contractor/dashboard" class="btn">返回</a>
+
 {% endblock %}

@@ -1,62 +1,38 @@
 {% extends "base.html" %}
-{% block title %}查看結案檔案{% endblock %}
+
+{% block title %}提交評價{% endblock %}
+
 {% block content %}
-
 <div class="card">
-    <h2>{{ project.title }} - 結案檔案</h2>
+    <h2>專案評價</h2>
 
-    {% if deliverable %}
-        <p><strong>檔案名稱：</strong>{{ deliverable.file_name }}</p>
-        <p><strong>說明：</strong>{{ deliverable.message }}</p>
-        <p><strong>上傳時間：</strong>{{ deliverable.uploaded_at }}</p>
-        <p><a href="/{{ deliverable.file_path }}" target="_blank" class="btn">下載檔案</a></p>
+    <p><strong>專案名稱：</strong>{{ project.title }}</p>
 
-        {% if project.status in ['assigned', 'rejected'] %}
-        <div style="margin-top: 2rem;">
-            <form method="POST" action="/client/project/{{ project.id }}/complete" style="display:inline;">
-                <button type="submit" class="btn btn-success">接受結案</button>
-            </form>
-            <form method="POST" action="/client/project/{{ project.id }}/reject" style="display:inline;">
-                <button type="submit" class="btn btn-danger">退件</button>
-            </form>
+    <form method="post">
+        <input type="hidden" name="target_id" value="{{ target_id }}">
+
+        <div class="form-group">
+            <label>評分一（1–5）</label>
+            <input type="number" name="dim1" min="1" max="5" required>
         </div>
-        {% endif %}
-    {% else %}
-        <p>接案人尚未上傳結案檔案</p>
-    {% endif %}
-</div>
 
-<div class="card" style="margin-top:2rem;">
-    <h3>承包者評價</h3>
-
-    {% if rating %}
-        <p><strong>平均分數：</strong>⭐ {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
-        <ul>
-            <li>產出品質：{{ rating.avg_dim1 }}</li>
-            <li>執行效率：{{ rating.avg_dim2 }}</li>
-            <li>合作態度：{{ rating.avg_dim3 }}</li>
-        </ul>
-        <hr>
-    {% else %}
-        <p>尚無評價</p>
-    {% endif %}
-
-    {% for r in reviews %}
-        <div style="margin-bottom:1rem;">
-            <p><strong>{{ r.reviewer_name }}</strong>：</p>
-            <p>{{ r.comment }}</p>
-            <p>分數：{{ r.dim1 }} / {{ r.dim2 }} / {{ r.dim3 }}</p>
-            <small>{{ r.created_at }}</small>
-            <hr>
+        <div class="form-group">
+            <label>評分二（1–5）</label>
+            <input type="number" name="dim2" min="1" max="5" required>
         </div>
-    {% endfor %}
 
-    {% if project.status == 'completed' and not has_reviewed %}
-        <a class="btn" href="/review/form?project_id={{ project.id }}&target_id={{ target_id }}">
-            評價承包者
-        </a>
-    {% endif %}
+        <div class="form-group">
+            <label>評分三（1–5）</label>
+            <input type="number" name="dim3" min="1" max="5" required>
+        </div>
+
+        <div class="form-group">
+            <label>整體評論</label>
+            <textarea name="comment" rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="btn">送出評價</button>
+        <a href="/" class="btn" style="background:#999;">取消</a>
+    </form>
 </div>
-
-<a href="/client/dashboard" class="btn">返回</a>
 {% endblock %}

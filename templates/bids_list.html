@@ -6,46 +6,79 @@
     <h2>{{ project.title }} - 投標列表</h2>
     <p>{{ project.description }}</p>
     <p><strong>預算:</strong> ${{ project.budget }}</p>
+    {% if project.deadline %}
+        <p><strong>截止時間 (UTC):</strong> {{ project.deadline }}</p>
+    {% endif %}
 </div>
 
 {% if bids %}
     {% for bid in bids %}
     <div class="card">
-
         <h3>{{ bid.contractor_name }}</h3>
 
-        <!-- ⭐ 承包者評價摘要 -->
-        {% set r = bid.rating %}
-        {% if r and r.review_count > 0 %}
-            <p><strong>平均評分：</strong> ⭐ {{ r.overall_avg }}（{{ r.review_count }} 筆）</p>
-            <ul>
-                <li>產出品質：{{ r.avg_dim1 }}</li>
-                <li>執行效率：{{ r.avg_dim2 }}</li>
-                <li>合作態度：{{ r.avg_dim3 }}</li>
+        <!-- ⭐ 乙方歷史評價（需求 2） -->
+        {% if bid.contractor_reviews %}
+        <div style="background:#f9f9f9; padding:1rem; border-radius:6px; margin-bottom:1rem;">
+            <strong>接案者過往評價（歷史資料）</strong>
+
+            {% set avg = bid.contractor_reviews.avg %}
+            <ul style="margin-top:0.5rem;">
+                <li>產出品質：
+                    {% if avg and avg[0] %}
+                        {{ avg[0]|round(1) }} ⭐
+                    {% else %}
+                        尚無評分
+                    {% endif %}
+                </li>
+                <li>執行效率：
+                    {% if avg and avg[1] %}
+                        {{ avg[1]|round(1) }} ⭐
+                    {% else %}
+                        尚無評分
+                    {% endif %}
+                </li>
+                <li>合作態度：
+                    {% if avg and avg[2] %}
+                        {{ avg[2]|round(1) }} ⭐
+                    {% else %}
+                        尚無評分
+                    {% endif %}
+                </li>
             </ul>
 
-            <details>
-                <summary style="cursor:pointer;">查看所有評論</summary>
-                <div style="margin-top:1rem;">
-                    {% for rv in bid.reviews %}
-                        <p><strong>{{ rv.reviewer_name }}</strong>：</p>
-                        <p>{{ rv.comment }}</p>
-                        <p>分數：{{ rv.dim1 }} / {{ rv.dim2 }} / {{ rv.dim3 }}</p>
-                        <small>{{ rv.created_at }}</small>
-                        <hr>
+            {% if bid.contractor_reviews.comments %}
+                <hr>
+                <strong>歷史評論：</strong>
+                <ul>
+                    {% for c in bid.contractor_reviews.comments %}
+                        <li style="margin-bottom:0.5rem;">
+                            {{ c[0] }}
+                            <br>
+                            <small style="color:#888;">{{ c[1] }}</small>
+                        </li>
                     {% endfor %}
-                </div>
-            </details>
-
-        {% else %}
-            <p>⚠ 此承包者目前沒有評價紀錄</p>
+                </ul>
+            {% else %}
+                <p style="color:#888;">尚無歷史評論</p>
+            {% endif %}
+        </div>
         {% endif %}
-
-        <hr>
+        <!-- ⭐ 評價區塊結束 -->
 
         <p><strong>報價:</strong> ${{ bid.price }}</p>
         <p><strong>說明:</strong> {{ bid.message }}</p>
-        <p><strong>投標時間:</strong> {{ bid.updated_at }}</p>
+        <p><strong>投標時間:</strong> {{ bid.updated_at or bid.uploaded_at }}</p>
+
+        <p><strong>提案檔案:</strong>
+            {% if bid.file_path %}
+                <a href="/{{ bid.file_path }}" target="_blank">
+                    下載 {{ bid.file_name }}
+                </a>
+            {% else %}
+                無
+            {% endif %}
+        </p>
+
         <p><strong>狀態:</strong>
             {% if bid.status == 'accepted' %}已接受
             {% elif bid.status == 'rejected' %}已拒絕
@@ -55,16 +88,16 @@
 
         {% if project.status == 'open' and bid.status == 'pending' %}
         <form method="POST" action="/client/bid/{{ bid.id }}/accept" style="display:inline;">
-            <button type="submit" class="btn btn-success">接受</button>
+            <button type="submit" class="btn btn-success">接受此投標</button>
         </form>
         {% endif %}
-
     </div>
     {% endfor %}
 {% else %}
-    <div class="card">目前還沒有投標</div>
+    <div class="card">
+        <p>目前還沒有投標</p>
+    </div>
 {% endif %}
 
 <a href="/client/dashboard" class="btn">返回</a>
-
 {% endblock %}

@@ -34,15 +34,15 @@ class BidRepository:
             return cur.fetchone()
     
     @staticmethod
-    def create(project_id: int, contractor_id: int, price: int, message: str) -> int:
-        """建立投標"""
+    def create(project_id: int, contractor_id: int, price: int, message: str, file_name: str = None, file_path: str = None) -> int:
+        """建立投標（含提案檔案）"""
         with get_db() as conn:
             cur = conn.cursor()
             cur.execute("""
-                INSERT INTO bids (project_id, contractor_id, price, message, status, updated_at)
-                VALUES (%s, %s, %s, %s, 'pending', NOW())
+                INSERT INTO bids (project_id, contractor_id, price, message, status, updated_at, file_name, file_path, uploaded_at)
+                VALUES (%s, %s, %s, %s, 'pending', NOW(), %s, %s, NOW())
                 RETURNING id
-            """, (project_id, contractor_id, price, message))
+            """, (project_id, contractor_id, price, message, file_name, file_path))
             bid_id = cur.fetchone()[0]
             conn.commit()
             return bid_id

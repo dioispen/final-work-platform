@@ -20,6 +20,9 @@
             {% endif %}
         </span></p>
         <p><strong>更新時間:</strong> {{ project.updated_at }}</p>
+        {% if project.deadline %}
+        <p><strong>截止時間 (UTC):</strong> {{ project.deadline }}</p>
+        {% endif %}
         {% if project.contractor_name %}
         <p><strong>接案人:</strong> {{ project.contractor_name }}</p>
         {% endif %}

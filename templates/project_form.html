@@ -16,6 +16,10 @@
             <label>預算</label>
             <input type="number" name="budget" value="{{ project.budget if project else '' }}" required>
         </div>
+        <div class="form-group">
+            <label>截止日期與時間(UTC)</label>
+            <input type="datetime-local" name="deadline" value="{% if project and project.deadline %}{{ project.deadline.strftime('%Y-%m-%dT%H:%M') }}{% endif %}" required>
+        </div>
         <button type="submit" class="btn">儲存</button>
         <a href="/client/dashboard" class="btn" style="background: #95a5a6;">取消</a>
     </form>

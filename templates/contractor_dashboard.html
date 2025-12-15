@@ -46,6 +46,7 @@
     <p><strong>預算:</strong> ${{ project.budget }}</p>
     <p><strong>委託人:</strong> {{ project.client_name }}</p>
     <p><strong>更新時間:</strong> {{ project.updated_at }}</p>
+    <p><strong>截止時間 (UTC):</strong> {{ project.deadline }}</p>
     <a href="/contractor/project/{{ project.id }}" class="btn">查看詳情</a>
 </div>
 {% endfor %}

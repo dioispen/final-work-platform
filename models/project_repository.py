@@ -50,29 +50,29 @@ class ProjectRepository:
             return cur.fetchall()
     
     @staticmethod
-    def create(title: str, description: str, budget: int, client_id: int) -> int:
+    def create(title: str, description: str, budget: int, client_id: int, deadline: Optional[str] = None) -> int:
         """建立新專案"""
         with get_db() as conn:
             cur = conn.cursor()
             cur.execute("""
-                INSERT INTO projects (title, description, budget, client_id, status, updated_at)
-                VALUES (%s, %s, %s, %s, 'open', NOW())
+                INSERT INTO projects (title, description, budget, client_id, status, updated_at, deadline)
+                VALUES (%s, %s, %s, %s, 'open', NOW(), %s)
                 RETURNING id
-            """, (title, description, budget, client_id))
+            """, (title, description, budget, client_id, deadline))
             project_id = cur.fetchone()[0]
             conn.commit()
             return project_id
 
     @staticmethod
-    def update(project_id: int, title: str, description: str, budget: int, client_id: int) -> bool:
+    def update(project_id: int, title: str, description: str, budget: int, client_id: int, deadline: Optional[str] = None) -> bool:
         """更新專案"""
         with get_db() as conn:
             cur = conn.cursor()
             cur.execute("""
                 UPDATE projects
-                SET title = %s, description = %s, budget = %s, updated_at = NOW()
+                SET title = %s, description = %s, budget = %s, updated_at = NOW(), deadline = %s
                 WHERE id = %s AND client_id = %s
-            """, (title, description, budget, project_id, client_id))
+            """, (title, description, budget, deadline, project_id, client_id))
             changed = cur.rowcount > 0
             conn.commit()
             return changed

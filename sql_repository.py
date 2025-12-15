@@ -3,10 +3,12 @@ from models.project_repository import ProjectRepository
 from models.bid_repository import BidRepository
 from models.user_repository import UserRepository
 from models.deliverable_repository import DeliverableRepository
+from models.review_repository import ReviewRepository   
 
 __all__ = [
     "ProjectRepository",
     "BidRepository",
     "UserRepository",
     "DeliverableRepository",
+    "ReviewRepository",   
 ]

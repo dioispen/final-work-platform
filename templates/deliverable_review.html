@@ -1,60 +1,32 @@
 {% extends "base.html" %}
 {% block title %}查看結案檔案{% endblock %}
 {% block content %}
-
 <div class="card">
     <h2>{{ project.title }} - 結案檔案</h2>
+    
+    {% if deliverables %}
+        <h3>歷史版本</h3>
+        {% for d in deliverables %}
+            <div style="margin-bottom:1rem;padding:0.5rem;border:1px solid #ddd;">
+                <p><strong>檔案名稱:</strong> {{ d.file_name }}</p>
+                <p><strong>說明:</strong> {{ d.message }}</p>
+                <p><strong>上傳時間:</strong> {{ d.uploaded_at }}</p>
+                <p><a href="/{{ d.file_path }}" target="_blank" class="btn">下載檔案</a></p>
+            </div>
+        {% endfor %}
 
-    {% if deliverable %}
-        <p><strong>檔案名稱：</strong>{{ deliverable.file_name }}</p>
-        <p><strong>說明：</strong>{{ deliverable.message }}</p>
-        <p><strong>上傳時間：</strong>{{ deliverable.uploaded_at }}</p>
-        <p><a href="/{{ deliverable.file_path }}" target="_blank" class="btn">下載檔案</a></p>
-
-        {% if project.status in ['assigned', 'rejected'] %}
+        {% if (project.status == 'assigned' or project.status == 'rejected') %}
         <div style="margin-top: 2rem;">
-            <form method="POST" action="/client/project/{{ project.id }}/complete" style="display:inline;">
+            <form method="POST" action="/client/project/{{ project.id }}/complete" style="display: inline;">
                 <button type="submit" class="btn btn-success">接受結案</button>
             </form>
-            <form method="POST" action="/client/project/{{ project.id }}/reject" style="display:inline;">
+            <form method="POST" action="/client/project/{{ project.id }}/reject" style="display: inline;">
                 <button type="submit" class="btn btn-danger">退件</button>
             </form>
         </div>
         {% endif %}
     {% else %}
         <p>接案人尚未上傳結案檔案</p>
-    {% endif %}
-</div>
-
-<div class="card" style="margin-top:2rem;">
-    <h3>承包者評價</h3>
-
-    {% if rating %}
-        <p><strong>平均分數：</strong>⭐ {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
-        <ul>
-            <li>產出品質：{{ rating.avg_dim1 }}</li>
-            <li>執行效率：{{ rating.avg_dim2 }}</li>
-            <li>合作態度：{{ rating.avg_dim3 }}</li>
-        </ul>
-        <hr>
-    {% else %}
-        <p>尚無評價</p>
-    {% endif %}
-
-    {% for r in reviews %}
-        <div style="margin-bottom:1rem;">
-            <p><strong>{{ r.reviewer_name }}</strong>：</p>
-            <p>{{ r.comment }}</p>
-            <p>分數：{{ r.dim1 }} / {{ r.dim2 }} / {{ r.dim3 }}</p>
-            <small>{{ r.created_at }}</small>
-            <hr>
-        </div>
-    {% endfor %}
-
-    {% if project.status == 'completed' and not has_reviewed %}
-        <a class="btn" href="/review/form?project_id={{ project.id }}&target_id={{ target_id }}">
-            評價承包者
-        </a>
     {% endif %}
 </div>
 
