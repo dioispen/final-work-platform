@@ -9,6 +9,7 @@ from routes.auth import router as auth_router
 from routes.client import router as client_router
 from routes.contractor import router as contractor_router
 from routes.review import router as review_router   # ⭐ 必須放在前面避免路徑衝突
+from routes.issue import router as issue_router
 
 app = FastAPI()
 
@@ -44,3 +45,4 @@ app.include_router(review_router)
 app.include_router(auth_router)
 app.include_router(client_router)
 app.include_router(contractor_router)
+app.include_router(issue_router)

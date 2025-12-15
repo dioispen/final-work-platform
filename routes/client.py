@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from sql_repository import ProjectRepository, BidRepository, DeliverableRepository
+from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository
 from models.review_repository import ReviewRepository
 from .dependencies import require_auth
 
@@ -180,6 +180,7 @@ async def view_deliverable(request: Request, project_id: int, user: dict = Depen
     rating = ReviewRepository.get_user_avg_scores(contractor_id)
     reviews = ReviewRepository.get_reviews_for_user(contractor_id)
     has_reviewed = ReviewRepository.has_reviewed(project_id, user["user_id"])
+    issues = IssueRepository.get_by_project(project_id)
 
     return templates.TemplateResponse(
         "deliverable_review.html",
@@ -192,6 +193,7 @@ async def view_deliverable(request: Request, project_id: int, user: dict = Depen
             "reviews": reviews,
             "has_reviewed": has_reviewed,
             "target_id": contractor_id,
+            "issues": issues,
         },
     )
 

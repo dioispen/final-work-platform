@@ -26,11 +26,46 @@
     {% endif %}
 </div>
 
+<div class="card" style="margin-top: 2rem; border-left: 5px solid #e67e22;">
+    <h3> 修正建議與討論 (Issues)</h3>
+    <p style="color:#666; font-size:0.9em;">如果檔案有需要修改的地方，請在下方建立議題與接案人溝通。</p>
+    
+    {% if issues %}
+        <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+            {% for issue in issues %}
+            <li style="margin-bottom: 0.5rem;">
+                <a href="/issue/{{ issue.id }}" style="text-decoration: none; font-weight: bold; font-size: 1.1em; color: #2980b9;">
+                    {{ issue.title }}
+                </a>
+                {% if issue.status == 'open' %}
+                    <span style="background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">進行中</span>
+                {% else %}
+                    <span style="background: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">已解決</span>
+                {% endif %}
+                <span style="color:#888; font-size: 0.9em;"> - {{ issue.created_at }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="color:#777; font-style: italic; margin: 10px 0;">目前沒有任何討論議題。</p>
+    {% endif %}
+
+    {% if project.status in ['assigned', 'rejected'] %}
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+    <h4>發起新的討論</h4>
+    <form method="POST" action="/issue/create" style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+        <input type="hidden" name="project_id" value="{{ project.id }}">
+        <input type="text" name="title" placeholder="例如：標題字體太小，請調整..." required style="flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
+        <button type="submit" class="btn" style="background: #e67e22; border: none;">開啟討論</button>
+    </form>
+    {% endif %}
+</div>
+
 <div class="card" style="margin-top:2rem;">
     <h3>承包者評價</h3>
 
     {% if rating %}
-        <p><strong>平均分數：</strong>⭐ {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
+        <p><strong>平均分數：</strong> {{ rating.overall_avg }}（{{ rating.review_count }} 筆）</p>
         <ul>
             <li>產出品質：{{ rating.avg_dim1 }}</li>
             <li>執行效率：{{ rating.avg_dim2 }}</li>
