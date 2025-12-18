@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException, Form, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository, ReviewRepository
-from .dependencies import require_auth, _sanitize_filename
+from .dependencies import require_auth, sanitize_filename
 import os
 from datetime import datetime, timezone
 import time
@@ -112,7 +112,7 @@ async def submit_bid(
     if not filename_orig.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="僅接受 PDF 格式的提案檔案")
 
-    safe_name = _sanitize_filename(filename_orig)
+    safe_name = sanitize_filename(filename_orig)
     unique_name = f"proposal_{project_id}_{user['user_id']}_{int(time.time())}_{safe_name}"
     file_path = os.path.join(UPLOAD_DIR, unique_name)
     with open(file_path, "wb") as buffer:
@@ -163,7 +163,7 @@ async def upload_deliverable(
         raise HTTPException(status_code=404)
 
     filename_orig = file.filename
-    safe_name = _sanitize_filename(filename_orig)
+    safe_name = sanitize_filename(filename_orig)
     unique_name = f"deliverable_{project_id}_{user['user_id']}_{int(time.time())}_{safe_name}"
     file_path = os.path.join(UPLOAD_DIR, unique_name)
 

@@ -12,7 +12,7 @@ def require_auth(request: Request) -> dict:
         raise HTTPException(status_code=303, headers={"Location": "/login"})
     return user
 
-def _sanitize_filename(name: str) -> str:
+def sanitize_filename(name: str) -> str:
     name = os.path.basename(name)
     return "".join(
         c if c.isalnum() or c in (' ', '.', '_', '-') else '_'

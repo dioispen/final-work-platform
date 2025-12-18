@@ -7,7 +7,7 @@
     {% if deliverables %}
         {% for d in deliverables %}
             <div style="margin-bottom:0.5rem;">
-                <span>{{ d.uploaded_at }} - {{ d.file_name }}</span>
+                <span>{{ d.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') }} - {{ d.file_name }}</span>
                 <a href="/{{ d.file_path }}" target="_blank" class="btn">下載</a>
             </div>
         {% endfor %}
