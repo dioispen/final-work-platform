@@ -21,7 +21,7 @@
             <span class="status status-{{ project.status }}">已完成</span>
         </p>
 
-        <p><strong>完成時間:</strong> {{ project.updated_at }}</p>
+        <p><strong>完成時間:</strong> {{ project.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
 
         <div style="margin-top: 1rem;">
             <a href="/client/project/{{ project.id }}/deliverable" class="btn">

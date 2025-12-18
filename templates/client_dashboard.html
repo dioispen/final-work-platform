@@ -19,9 +19,9 @@
             {% elif project.status == 'rejected' %}已退件
             {% endif %}
         </span></p>
-        <p><strong>更新時間:</strong> {{ project.updated_at }}</p>
+        <p><strong>更新時間:</strong> {{ project.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
         {% if project.deadline %}
-        <p><strong>截止時間:</strong> {{ project.deadline }}</p>
+        <p><strong>截止時間:</strong> {{ project.deadline.strftime('%Y-%m-%d %H:%M:%S') }}</p>
         {% endif %}
         {% if project.contractor_name %}
         <p><strong>接案人:</strong> {{ project.contractor_name }}</p>

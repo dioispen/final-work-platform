@@ -41,7 +41,7 @@
                         {{ comment.username }} 
                         <span style="font-size:0.8em; color:#666;">({{ "委託人" if comment.role == 'client' else "接案人" }})</span>
                     </strong>
-                    <small style="color:#999;">{{ comment.created_at }}</small>
+                    <small style="color:#999;">{{ comment.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
                 </div>
                 <p style="margin:0; white-space: pre-wrap; line-height: 1.5;">{{ comment.message }}</p>
             </div>
