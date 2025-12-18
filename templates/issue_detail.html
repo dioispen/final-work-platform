@@ -34,9 +34,7 @@
     <hr>
     <div style="display: flex; flex-direction: column; gap: 1rem;">
         {% for comment in comments %}
-            <div style="padding: 15px; border-radius: 8px; 
-                        background: {{ '#e8f6f3' if comment.role == 'client' else '#fef9e7' }};
-                        border: 1px solid {{ '#d1f2eb' if comment.role == 'client' else '#f9e79f' }};">
+            <div style="padding: 15px; border-radius: 8px; background: {% if comment.role == 'client' %}#e8f6f3{% else %}#fef9e7{% endif %}; border: 1px solid {% if comment.role == 'client' %}#d1f2eb{% else %}#f9e79f{% endif %};">
                 
                 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                     <strong>

@@ -2,8 +2,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from models.review_repository import ReviewRepository
-from sql_repository import ProjectRepository
+from sql_repository import ProjectRepository, ReviewRepository
 from .dependencies import require_auth
 
 router = APIRouter(prefix="/review", tags=["review"])
@@ -47,6 +46,7 @@ async def review_page(
     return templates.TemplateResponse(
         "review/new.html",   # 確認 templates/new.html 存在
         {
+            "user": user,
             "request": request,
             "project_id": project_id,
             "reviewee_id": reviewee_id,

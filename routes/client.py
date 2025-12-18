@@ -2,8 +2,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository
-from models.review_repository import ReviewRepository
+from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository, ReviewRepository
 from .dependencies import require_auth
 
 router = APIRouter(prefix="/client", tags=["client"])

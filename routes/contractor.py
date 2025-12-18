@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository
-from models.review_repository import ReviewRepository
-from sql_repository import ProjectRepository, BidRepository, DeliverableRepository
-from .dependencies import require_auth
+from sql_repository import ProjectRepository, BidRepository, DeliverableRepository, IssueRepository, ReviewRepository
+from .dependencies import require_auth, _sanitize_filename
 import os
 from datetime import datetime, timezone
 import time
@@ -15,12 +13,7 @@ templates = Jinja2Templates(directory="templates")
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def _sanitize_filename(name: str) -> str:
-    name = os.path.basename(name)
-    return "".join(
-        c if c.isalnum() or c in (' ', '.', '_', '-') else '_'
-        for c in name
-    ).replace(' ', '_')
+
 
 # =========================
 # Dashboard
@@ -98,14 +91,20 @@ async def submit_bid(
     if user['role'] != 'contractor':
         raise HTTPException(status_code=403)
 
-    # 檢查 deadline
+
     project = ProjectRepository.get_by_id(project_id)
-    if not project:
-        raise HTTPException(status_code=404)
     deadline = project.get('deadline')
-    deadline = deadline.replace(tzinfo=timezone.utc)
+    
+    # 投標截止日期檢查
+    if deadline:
+        if isinstance(deadline, str):
+            deadline = datetime.fromisoformat(deadline)
+    if deadline.tzinfo is None:
+        deadline = deadline.replace(tzinfo=timezone.utc)
+    else:
+        deadline = deadline.astimezone(timezone.utc)
     now = datetime.now(timezone.utc)
-    if deadline and isinstance(deadline, datetime) and now > deadline:
+    if now > deadline:
         raise HTTPException(status_code=400, detail="投標截止日期已過，無法提交提案")
 
     # 檔案格式檢查（僅限 pdf）
