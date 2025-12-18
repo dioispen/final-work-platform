@@ -31,6 +31,7 @@ async def contractor_dashboard(request: Request, user: dict = Depends(require_au
         raise HTTPException(status_code=403)
 
     my_projects = ProjectRepository.get_contractor_projects(user['user_id'])
+    # 為每個專案檢查是否已有結案檔案，並加入 flag
     for p in my_projects:
         deliverables = DeliverableRepository.get_all_by_project_id(p["id"])
         p["has_deliverable"] = len(deliverables) > 0
@@ -97,35 +98,30 @@ async def submit_bid(
     if user['role'] != 'contractor':
         raise HTTPException(status_code=403)
 
+    # 檢查 deadline
     project = ProjectRepository.get_by_id(project_id)
     if not project:
         raise HTTPException(status_code=404)
-
-    deadline = project.get("deadline").replace(tzinfo=timezone.utc) if project.get("deadline") else None
+    deadline = project.get('deadline')
+    deadline = deadline.replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     if deadline and isinstance(deadline, datetime) and now > deadline:
-        raise HTTPException(status_code=400, detail="投標截止日期已過")
+        raise HTTPException(status_code=400, detail="投標截止日期已過，無法提交提案")
 
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="僅接受 PDF 檔案")
+    # 檔案格式檢查（僅限 pdf）
+    filename_orig = file.filename or ""
+    if not filename_orig.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="僅接受 PDF 格式的提案檔案")
 
-    filename_orig = file.filename
     safe_name = _sanitize_filename(filename_orig)
     unique_name = f"proposal_{project_id}_{user['user_id']}_{int(time.time())}_{safe_name}"
     file_path = os.path.join(UPLOAD_DIR, unique_name)
+    with open(file_path, "wb") as buffer:
+        content = await file.read()
+        buffer.write(content)
 
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-
-    BidRepository.create(
-        project_id,
-        user["user_id"],
-        price,
-        message,
-        filename_orig,
-        file_path
-    )
-
+    # 儲存投標（含檔案路徑）
+    BidRepository.create(project_id, user['user_id'], price, message, filename_orig, file_path)
     return RedirectResponse(f"/contractor/project/{project_id}", status_code=303)
 
 # =========================

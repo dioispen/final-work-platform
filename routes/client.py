@@ -113,7 +113,7 @@ async def view_bids(
     if not project or project['client_id'] != user['user_id']:
         raise HTTPException(status_code=404)
 
-    # ⭐⭐ ⭐ 新增：替每一個 bid 補上乙方評價 ⭐⭐ ⭐
+    #新增：替每一個 bid 補上乙方評價資料
     for bid in bids:
         bid["contractor_reviews"] = ReviewRepository.get_average_and_comments(
             bid["contractor_id"]
