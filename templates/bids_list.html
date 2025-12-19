@@ -16,7 +16,7 @@
     <div class="card">
         <h3>{{ bid.contractor_name }}</h3>
 
-        <!-- ⭐ 乙方歷史評價（需求 2） -->
+        <!-- 乙方歷史評價 -->
         {% if bid.contractor_reviews %}
         <div style="background:#f9f9f9; padding:1rem; border-radius:6px; margin-bottom:1rem;">
             <strong>接案者過往評價（歷史資料）</strong>
@@ -63,7 +63,7 @@
             {% endif %}
         </div>
         {% endif %}
-        <!-- ⭐ 評價區塊結束 -->
+        <!-- 評價區塊結束 -->
 
         <p><strong>報價:</strong> ${{ bid.price }}</p>
         <p><strong>說明:</strong> {{ bid.message }}</p>

@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="templates")
 
 def _within_review_window(project: dict) -> bool:
 	# 支援常見欄位名稱
-	completed = project.get("completed_at")
+	completed = project.get("updated_at")
 	if not completed:
 		return False
 	# 若為字串，嘗試用 ISO 格式解析（處理 Z 時區）

@@ -46,6 +46,27 @@ class BidRepository:
             bid_id = cur.fetchone()[0]
             conn.commit()
             return bid_id
+        
+    @staticmethod
+    def update(bid_id: int, price: int, message: str, file_name: str = None, file_path: str = None) -> bool:
+        """更新投標（含提案檔案）"""
+        with get_db() as conn:
+            cur = conn.cursor()
+            if file_name and file_path:
+                cur.execute("""
+                    UPDATE bids
+                    SET price = %s, message = %s, file_name = %s, file_path = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (price, message, file_name, file_path, bid_id))
+            else:
+                cur.execute("""
+                    UPDATE bids
+                    SET price = %s, message = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (price, message, bid_id))
+            changed = cur.rowcount > 0
+            conn.commit()
+            return changed
     
     @staticmethod
     def accept(bid_id: int) -> bool:

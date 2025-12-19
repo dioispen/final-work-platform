@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from routes.auth import router as auth_router
 from routes.client import router as client_router
 from routes.contractor import router as contractor_router
-from routes.review import router as review_router   # ⭐ 必須放在前面避免路徑衝突
+from routes.review import router as review_router
 from routes.issue import router as issue_router
 
 app = FastAPI()
@@ -45,5 +45,5 @@ async def not_found_handler(request: Request, exc):
 app.include_router(auth_router)
 app.include_router(client_router)
 app.include_router(contractor_router)
-app.include_router(review_router)   # ⭐ 新增
+app.include_router(review_router)
 app.include_router(issue_router)
