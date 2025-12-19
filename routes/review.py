@@ -1,12 +1,36 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from datetime import datetime, timezone, timedelta
 
 from sql_repository import ProjectRepository, ReviewRepository
 from .dependencies import require_auth
 
 router = APIRouter(prefix="/review", tags=["review"])
 templates = Jinja2Templates(directory="templates")
+
+
+def _within_review_window(project: dict) -> bool:
+	# 支援常見欄位名稱
+	completed = project.get("completed_at")
+	if not completed:
+		return False
+	# 若為字串，嘗試用 ISO 格式解析（處理 Z 時區）
+	if isinstance(completed, str):
+		try:
+			completed = datetime.fromisoformat(completed.replace("Z", "+00:00"))
+		except Exception:
+			return False
+	# 必須為 datetime
+	if not isinstance(completed, datetime):
+		return False
+	# 比較時考慮時區資訊
+	if completed.tzinfo is None:
+		now = datetime.now(timezone.utc).replace(tzinfo=None)
+	else:
+		now = datetime.now(timezone.utc)
+	# 若 completed 有 tzinfo，確保 now 也在同一 time zone 上（已處理）
+	return (now - completed) <= timedelta(days=3)
 
 
 # =========================
@@ -23,6 +47,10 @@ async def review_page(
     # 專案不存在或尚未完成
     if not project or project["status"] != "completed":
         raise HTTPException(status_code=403)
+
+    # 新增：限完成後 7 天內可評價
+    if not _within_review_window(project):
+        raise HTTPException(status_code=403, detail='not in deadline')
 
     # 防止重複評價
     if ReviewRepository.has_reviewed(project_id, user["user_id"]):
@@ -64,6 +92,12 @@ async def submit_review(
     request: Request,
     user: dict = Depends(require_auth)
 ):
+    project = ProjectRepository.get_by_id(project_id)
+
+    # 再次檢查：專案存在且在 7 天內
+    if not project or project["status"] != "completed" or not _within_review_window(project):
+        raise HTTPException(status_code=403, detail="not allowed")
+
     form = await request.form()
 
     ReviewRepository.create(
