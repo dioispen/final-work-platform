@@ -95,7 +95,7 @@ async def update_project(
     return RedirectResponse("/client/dashboard", status_code=303)
 
 # =========================
-# 甲方查看投標列表（⭐ 新增評價資料在這裡）
+# 甲方查看投標列表
 # =========================
 @router.get("/project/{project_id}/bids", response_class=HTMLResponse)
 async def view_bids(

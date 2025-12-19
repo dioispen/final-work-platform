@@ -24,13 +24,13 @@
     {% if user.role == 'client' and issue.status == 'open' %}
     <form method="POST" action="/issue/{{ issue.id }}/close" style="margin-top:1rem; border-top:1px solid #eee; padding-top:1rem;">
         <p>如果你滿意目前的修改結果，請點擊下方按鈕結案：</p>
-        <button type="submit" class="btn" style="background:#27ae60;">✅ 標記為已解決並結束討論</button>
+        <button type="submit" class="btn" style="background:#27ae60;">標記為已解決並結束討論</button>
     </form>
     {% endif %}
 </div>
 
 <div class="card" style="background: #fdfdfd;">
-    <h3>💬 討論紀錄</h3>
+    <h3>討論紀錄</h3>
     <hr>
     <div style="display: flex; flex-direction: column; gap: 1rem;">
         {% for comment in comments %}
@@ -63,7 +63,7 @@
 </div>
 {% else %}
 <div class="card" style="text-align:center; color:#777;">
-    <p>🚫 此議題已解決，討論已關閉。</p>
+    <p>此議題已解決，討論已關閉。</p>
 </div>
 {% endif %}
 

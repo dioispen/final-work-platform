@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{% if bid %}修改{% else %}建立{% endif %}投標{% endblock %}
+{% block content %}
+<div class="card">
+    <h2>{% if bid %}修改{% else %}建立{% endif %}投標</h2>
+    <form method="POST"
+        action="{% if bid %}/contractor/project/{{ project.id }}/bid/edit{% else %}/contractor/project/{{ project.id }}/bid/create{% endif %}"
+        enctype="multipart/form-data">
+        <div class="form-group">
+            <label>報價</label>
+            <input type="number" name="price" value="{{ bid.price if bid else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>說明</label>
+            <textarea name="message" required>{{ bid.message if bid else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>提案計畫書 (PDF)</label>
+            <input type="file" name="file" accept="application/pdf" required>
+        </div>
+        {% if bid.file_path %}
+            <p>最近上傳的檔案: <a href="/{{ bid.file_path }}" target="_blank">{{bid.file_name}}</a></p>
+        {% endif %}
+
+        <button type="submit" class="btn">提交投標</button>
+    </form>
+</div>
+{% endblock %}

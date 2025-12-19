@@ -76,10 +76,32 @@ async def view_project(request: Request, project_id: int, user: dict = Depends(r
         },
     )
 
+
+@router.get("/project/{project_id}/bid", response_class=HTMLResponse)
+async def edit_bid_page(request: Request, project_id: int, user: dict = Depends(require_auth)):
+    if user['role'] != 'contractor':
+        raise HTTPException(status_code=403)
+
+    project = ProjectRepository.get_by_id(project_id)
+    if not project:
+        raise HTTPException(status_code=404)
+
+    my_bid = BidRepository.get_contractor_bid(project_id, user['user_id'])
+
+    return templates.TemplateResponse(
+        "bid_form.html",
+        {
+            "request": request,
+            "user": user,
+            "project": project,
+            "bid": my_bid
+        }
+    )
+
 # =========================
 # 投標
 # =========================
-@router.post("/project/{project_id}/bid")
+@router.post("/project/{project_id}/bid/create")
 async def submit_bid(
     request: Request,
     project_id: int,
@@ -121,6 +143,54 @@ async def submit_bid(
 
     # 儲存投標（含檔案路徑）
     BidRepository.create(project_id, user['user_id'], price, message, filename_orig, file_path)
+    return RedirectResponse(f"/contractor/project/{project_id}", status_code=303)
+
+@router.post("/project/{project_id}/bid/edit")
+async def edit_bid(
+    request: Request,
+    project_id: int,
+    price: int = Form(...),
+    message: str = Form(...),
+    file: UploadFile = File(None),
+    user: dict = Depends(require_auth)
+):
+    if user['role'] != 'contractor':
+        raise HTTPException(status_code=403)
+
+    project = ProjectRepository.get_by_id(project_id)
+    deadline = project.get('deadline')
+    # 投標截止日期檢查
+    if deadline:
+        if isinstance(deadline, str):
+            deadline = datetime.fromisoformat(deadline)
+    if deadline.tzinfo is None:
+        deadline = deadline.replace(tzinfo=timezone.utc)
+    else:
+        deadline = deadline.astimezone(timezone.utc)
+    now = datetime.now(timezone.utc)
+    if now > deadline:
+        raise HTTPException(status_code=400, detail="投標截止日期已過，無法提交提案")
+
+    my_bid = BidRepository.get_contractor_bid(project_id, user['user_id'])
+    if not my_bid:
+        raise HTTPException(status_code=404)
+
+    if file:
+        filename_orig = file.filename or ""
+        if not filename_orig.lower().endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="僅接受 PDF 格式的提案檔案")
+
+        safe_name = _sanitize_filename(filename_orig)
+        unique_name = f"proposal_{project_id}_{user['user_id']}_{int(time.time())}_{safe_name}"
+        file_path = os.path.join(UPLOAD_DIR, unique_name)
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+
+        BidRepository.update(my_bid['id'], price, message, filename_orig, file_path)
+    else:
+        BidRepository.update(my_bid['id'], price, message)
+
     return RedirectResponse(f"/contractor/project/{project_id}", status_code=303)
 
 # =========================

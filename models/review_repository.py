@@ -19,7 +19,7 @@ class ReviewRepository:
             return cur.fetchone() is not None
 
     # =========================
-    # 建立評價（⭐ 支援 keyword argument）
+    # 建立評價（支援 keyword argument）
     # =========================
     @staticmethod
     def create(
